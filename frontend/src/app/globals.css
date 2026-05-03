@@ -1,0 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap");
+@import "tailwindcss";
+
+:root {
+  --background: #f4f7fb;
+  --foreground: #0f172a;
+  --sidebar-width: 240px;
+  --header-height: 56px;
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.08), transparent 28%),
+    linear-gradient(180deg, #f9fbfe 0%, #f4f7fb 100%);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Manrope", "Noto Sans SC", sans-serif;
+}
