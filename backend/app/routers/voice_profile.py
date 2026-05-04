@@ -144,7 +144,7 @@ async def create_voice_clone(
         entity_type="voice_clone_source",
         entity_id=result["voice_profile_id"],
         user_id=user_id,
-        detail=f"consent_type={body.consent_type}",
+        detail=f"consent_type={body.consent_type or 'internal_use'}",
     )
     await db.commit()
     dispatch_voice_profile_job(result["voice_profile_id"])

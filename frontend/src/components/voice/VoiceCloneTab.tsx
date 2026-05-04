@@ -23,12 +23,6 @@ import type { TaskDetail, VoiceProfileItem } from "@/types";
 import { VoiceCard } from "./VoiceCard";
 import { VoiceDetailPanel } from "./VoiceDetailPanel";
 
-const CONSENT_TYPES = [
-  { value: "self", label: "本人授权" },
-  { value: "authorized_agent", label: "代理授权" },
-  { value: "enterprise", label: "企业授权" },
-];
-
 const CLONE_DEFAULT_STYLE =
   "自然、平稳、像真人讲解，停顿自然，不要播音腔，不要夸张。";
 
@@ -58,8 +52,6 @@ export function VoiceCloneTab({ embedded = false, initialAudioUrl }: VoiceCloneT
   const [form, setForm] = useState({
     name: "",
     source_audio_url: "",
-    consent_type: "self",
-    consent_statement: "",
     text: "",
     one_time_only: true,
   });
@@ -278,7 +270,7 @@ export function VoiceCloneTab({ embedded = false, initialAudioUrl }: VoiceCloneT
   };
 
   const handleSubmit = async () => {
-    if (!form.name.trim() || !form.consent_statement.trim()) {
+    if (!form.name.trim()) {
       return;
     }
 
@@ -305,8 +297,6 @@ export function VoiceCloneTab({ embedded = false, initialAudioUrl }: VoiceCloneT
         name: form.name.trim(),
         model_code: "MiMo-V2.5-TTS-VoiceClone",
         source_audio_url: sourceAudioUrl,
-        consent_type: form.consent_type,
-        consent_statement: form.consent_statement.trim(),
       });
 
       setSubmitStage("waiting_clone");
@@ -318,8 +308,8 @@ export function VoiceCloneTab({ embedded = false, initialAudioUrl }: VoiceCloneT
         name: activeProfile.name,
         model_code: activeProfile.model_code,
         source_audio_url: sourceAudioUrl,
-        consent_type: form.consent_type,
-        consent_statement: form.consent_statement.trim(),
+        consent_type: "internal_use",
+        consent_statement: "internal_use",
         created_at: new Date().toISOString(),
       });
 
@@ -358,8 +348,6 @@ export function VoiceCloneTab({ embedded = false, initialAudioUrl }: VoiceCloneT
       setForm({
         name: "",
         source_audio_url: "",
-        consent_type: "self",
-        consent_statement: "",
         text: "",
         one_time_only: true,
       });
@@ -391,7 +379,6 @@ export function VoiceCloneTab({ embedded = false, initialAudioUrl }: VoiceCloneT
   const hasAudio = audioDataUrl.length > 0;
   const canSubmit =
     form.name.trim().length > 0 &&
-    form.consent_statement.trim().length > 0 &&
     (hasAudio || (showAdvancedUrl && form.source_audio_url.trim().length > 0));
 
   const submitLabel =
@@ -627,43 +614,6 @@ export function VoiceCloneTab({ embedded = false, initialAudioUrl }: VoiceCloneT
             </div>
 
             <div className="space-y-5">
-              <div>
-                <label className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
-                  授权类型
-                </label>
-                <select
-                  value={form.consent_type}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, consent_type: event.target.value }))
-                  }
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
-                >
-                  {CONSENT_TYPES.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
-                  授权声明
-                </label>
-                <textarea
-                  value={form.consent_statement}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      consent_statement: event.target.value,
-                    }))
-                  }
-                  placeholder="请说明你拥有该声音样本的使用授权。"
-                  rows={3}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-
               <div>
                 <label className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
                   本次要生成的文本

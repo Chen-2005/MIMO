@@ -42,8 +42,8 @@ export async function createVoiceClone(data: {
   name: string;
   model_code: string;
   source_audio_url: string;
-  consent_type: string;
-  consent_statement: string;
+  consent_type?: string;
+  consent_statement?: string;
 }): Promise<VoiceProfileCreated> {
   return api.post<VoiceProfileCreated>("/api/v1/voice-profiles/clone", data);
 }

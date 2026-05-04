@@ -44,8 +44,8 @@ class CreateVoiceCloneRequest(BaseModel):
     name: str
     model_code: str = "MiMo-V2.5-TTS-VoiceClone"
     source_audio_url: str
-    consent_type: str
-    consent_statement: str
+    consent_type: str | None = None
+    consent_statement: str | None = None
 
 
 class UpdateVoiceProfileRequest(BaseModel):

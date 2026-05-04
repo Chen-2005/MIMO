@@ -433,8 +433,8 @@ class VoiceService:
         name: str,
         model_code: str,
         source_audio_url: str,
-        consent_type: str,
-        consent_statement: str,
+        consent_type: str | None,
+        consent_statement: str | None,
     ) -> dict:
         if not source_audio_url or not source_audio_url.startswith(
             ("http://", "https://", "/static/", "data:audio/")
@@ -442,9 +442,11 @@ class VoiceService:
             raise ValueError(
                 "Invalid source_audio_url: must be an http(s) URL, /static/ path, or data:audio payload"
             )
+        consent_type = consent_type or "internal_use"
+        consent_statement = (consent_statement or "internal_use").strip()
         valid_consent_types = {"self", "authorized_agent", "enterprise"}
-        if consent_type not in valid_consent_types:
-            raise ValueError(f"Invalid consent_type: must be one of {valid_consent_types}")
+        if consent_type not in valid_consent_types and consent_type != "internal_use":
+            raise ValueError(f"Invalid consent_type: must be one of {valid_consent_types | {'internal_use'}}")
 
         profile = VoiceProfile(
             user_id=user_id,
