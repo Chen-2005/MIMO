@@ -10,6 +10,34 @@ interface AudioPlayerProps {
   downloadUrl?: string;
 }
 
+function getDownloadFilename(
+  disposition: string | null,
+  fallback: string,
+): string {
+  if (!disposition) return fallback;
+
+  const utf8Match = disposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1]).replace(/[\\/]/g, "_");
+    } catch {
+      return utf8Match[1].replace(/[\\/]/g, "_");
+    }
+  }
+
+  const quotedMatch = disposition.match(/filename\s*=\s*"([^"]+)"/i);
+  if (quotedMatch?.[1]) {
+    return quotedMatch[1].replace(/[\\/]/g, "_");
+  }
+
+  const bareMatch = disposition.match(/filename\s*=\s*([^;]+)/i);
+  if (bareMatch?.[1]) {
+    return bareMatch[1].trim().replace(/^["']|["']$/g, "").replace(/[\\/]/g, "_");
+  }
+
+  return fallback;
+}
+
 export function AudioPlayer({ src, durationMs, downloadUrl }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
@@ -60,8 +88,7 @@ export function AudioPlayer({ src, durationMs, downloadUrl }: AudioPlayerProps) 
       const a = document.createElement("a");
       a.href = url;
       const disposition = resp.headers.get("content-disposition");
-      const match = disposition?.match(/filename=(.+)/);
-      a.download = match ? match[1] : `audio.${format}`;
+      a.download = getDownloadFilename(disposition, `audio.${format}`);
       document.body.appendChild(a);
       a.click();
       a.remove();
