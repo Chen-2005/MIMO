@@ -3,6 +3,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { MobileDrawerSetup } from "@/components/layout/MobileDrawer";
+import { NicknamePrompt } from "@/components/layout/NicknamePrompt";
 
 export const metadata: Metadata = {
   title: "MiMo TTS Platform",
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN">
       <body className="flex h-screen overflow-hidden">
+        <NicknamePrompt />
         <MobileDrawerSetup />
         <Sidebar />
         <div className="flex flex-1 flex-col overflow-hidden">

@@ -1,4 +1,5 @@
 import axios, { type AxiosRequestConfig } from "axios";
+import { getUserId } from "./userIdentity";
 
 export function resolveBaseUrl(): string {
   if (typeof window !== "undefined") {
@@ -43,6 +44,14 @@ const client = axios.create({
   baseURL: resolveBaseUrl(),
   timeout: 30000,
   headers: { "Content-Type": "application/json" },
+});
+
+client.interceptors.request.use((config) => {
+  const userId = getUserId();
+  if (userId) {
+    config.headers["X-User-Id"] = userId;
+  }
+  return config;
 });
 
 client.interceptors.response.use(
