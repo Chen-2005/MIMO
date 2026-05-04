@@ -30,7 +30,12 @@ interface TTSState {
   loadRecentTasks: () => Promise<void>;
 }
 
-const INITIAL_STATE = {
+type TTSBaseState = Omit<
+  TTSState,
+  "setField" | "generate" | "reset" | "addRecentTask" | "clearRecentTasks" | "loadRecentTasks"
+>;
+
+const INITIAL_STATE: TTSBaseState = {
   text: "",
   modelCode: "MiMo-V2.5-TTS",
   voiceProfileId: null,
