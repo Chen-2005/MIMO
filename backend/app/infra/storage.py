@@ -9,7 +9,7 @@ from app.config import settings
 
 class AbstractStorageService(ABC):
     @abstractmethod
-    async def upload(self, key: str, data: bytes, content_type: str = "audio/mpeg") -> str:
+    async def upload(self, key: str, data: bytes, content_type: str = "audio/wav") -> str:
         """Upload file and return the public URL."""
 
     @abstractmethod
@@ -24,7 +24,7 @@ class LocalStorageService(AbstractStorageService):
         self.base_path = Path(base_path or settings.LOCAL_STORAGE_PATH)
         self.base_path.mkdir(parents=True, exist_ok=True)
 
-    async def upload(self, key: str, data: bytes, content_type: str = "audio/mpeg") -> str:
+    async def upload(self, key: str, data: bytes, content_type: str = "audio/wav") -> str:
         file_path = self.base_path / key
         file_path.parent.mkdir(parents=True, exist_ok=True)
         async with aiofiles.open(file_path, "wb") as f:
@@ -52,7 +52,7 @@ class S3StorageService(AbstractStorageService):
         self.s3 = boto3.client("s3", **kwargs)
         self.bucket = settings.S3_BUCKET
 
-    async def upload(self, key: str, data: bytes, content_type: str = "audio/mpeg") -> str:
+    async def upload(self, key: str, data: bytes, content_type: str = "audio/wav") -> str:
         self.s3.put_object(Bucket=self.bucket, Key=key, Body=data, ContentType=content_type)
         if settings.S3_ENDPOINT:
             return f"{settings.S3_ENDPOINT}/{self.bucket}/{key}"
@@ -68,5 +68,5 @@ def get_storage_service() -> AbstractStorageService:
     return LocalStorageService()
 
 
-def make_audio_key(task_id: int, output_format: str = "mp3") -> str:
+def make_audio_key(task_id: int, output_format: str = "wav") -> str:
     return f"audio/{task_id}/{uuid.uuid4().hex}.{output_format}"

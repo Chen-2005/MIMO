@@ -32,7 +32,7 @@ class TTSTask(TimestampMixin, Base):
     pitch: Mapped[float | None] = mapped_column(Numeric(4, 2))
     volume: Mapped[float | None] = mapped_column(Numeric(4, 2))
     emotion: Mapped[str | None] = mapped_column(String(64))
-    output_format: Mapped[str] = mapped_column(String(16), default="mp3", nullable=False)
+    output_format: Mapped[str] = mapped_column(String(16), default="wav", nullable=False)
     audio_url: Mapped[str | None] = mapped_column(String(1024))
     audio_duration_ms: Mapped[int | None] = mapped_column(Integer)
     provider_task_id: Mapped[str | None] = mapped_column(String(128))

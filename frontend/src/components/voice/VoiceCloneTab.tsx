@@ -332,7 +332,7 @@ export function VoiceCloneTab({ embedded = false, initialAudioUrl }: VoiceCloneT
           voice_profile_id: activeProfile.id,
           style_prompt: CLONE_DEFAULT_STYLE,
           speed: 0.9,
-          output_format: "mp3",
+          output_format: "wav",
           enable_fallback: true,
         });
 

@@ -1,6 +1,8 @@
 import logging
+import subprocess
+import tempfile
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -134,11 +136,13 @@ async def get_task_logs(
 @router.get("/tasks/{task_id}/audio")
 async def download_audio(
     task_id: int,
+    format: str = Query("wav"),
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user),
 ):
     from pathlib import Path
 
+    from starlette.background import BackgroundTask
     from fastapi.responses import FileResponse
 
     from app.config import settings
@@ -148,22 +152,62 @@ async def download_audio(
     if not audio_url:
         raise HTTPException(status_code=404, detail="Audio not found or task not completed")
 
+    if format not in {"wav", "mp3"}:
+        raise HTTPException(status_code=400, detail="Unsupported download format")
+
     # Local storage: serve file directly so <a download> works
     if audio_url.startswith("/static/"):
         relative = audio_url.removeprefix("/static/")
         file_path = Path(settings.LOCAL_STORAGE_PATH) / relative
         if not file_path.exists():
             raise HTTPException(status_code=404, detail="Audio file not found on disk")
-        ext = file_path.suffix.lstrip(".")
-        media = "audio/mpeg" if ext == "mp3" else "audio/wav" if ext == "wav" else f"audio/{ext}"
-        filename = f"tts_{task_id}.{ext}"
+
+        if format == "wav":
+            return FileResponse(
+                path=str(file_path),
+                media_type="audio/wav",
+                filename=f"tts_{task_id}.wav",
+            )
+
+        if file_path.suffix.lower() != ".wav":
+            raise HTTPException(status_code=400, detail="Source audio is not WAV and cannot be converted safely")
+
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+                temp_mp3_path = Path(tmp.name)
+
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    str(file_path),
+                    "-vn",
+                    "-codec:a",
+                    "libmp3lame",
+                    "-q:a",
+                    "2",
+                    str(temp_mp3_path),
+                ],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=503, detail="ffmpeg is not installed on the server") from exc
+        except subprocess.CalledProcessError as exc:
+            raise HTTPException(status_code=500, detail="Failed to convert WAV to MP3") from exc
+
         return FileResponse(
-            path=str(file_path),
-            media_type=media,
-            filename=filename,
+            path=str(temp_mp3_path),
+            media_type="audio/mpeg",
+            filename=f"tts_{task_id}.mp3",
+            background=BackgroundTask(temp_mp3_path.unlink, missing_ok=True),
         )
 
     # S3 or external URL: redirect
+    if format == "mp3":
+        raise HTTPException(status_code=400, detail="MP3 export is only supported for local stored WAV files right now")
     return RedirectResponse(url=audio_url)
 
 

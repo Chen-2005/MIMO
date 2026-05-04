@@ -13,7 +13,7 @@ class CreateTTSRequest(BaseModel):
     pitch: float | None = None
     volume: float | None = None
     emotion: str | None = None
-    output_format: str = "mp3"
+    output_format: str = "wav"
     enable_fallback: bool = True
 
 
@@ -34,7 +34,7 @@ class TaskDetail(BaseModel):
     text_char_count: int = 0
     style_prompt: str | None = None
     speed: float | None = None
-    output_format: str = "mp3"
+    output_format: str = "wav"
     audio_url: str | None = None
     audio_duration_ms: int | None = None
     provider_error_code: str | None = None

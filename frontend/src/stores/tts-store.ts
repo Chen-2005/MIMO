@@ -11,7 +11,7 @@ interface TTSState {
   voiceProfileId: number | null;
   stylePrompt: string;
   speed: number;
-  outputFormat: string;
+  outputFormat: "wav";
 
   // Task state
   currentTask: TaskDetail | null;
@@ -36,7 +36,7 @@ const INITIAL_STATE = {
   voiceProfileId: null,
   stylePrompt: "自然、平稳、像真人讲解，停顿自然，不要播音腔，不要夸张。",
   speed: 0.9,
-  outputFormat: "mp3",
+  outputFormat: "wav",
   currentTask: null,
   isGenerating: false,
   error: null,

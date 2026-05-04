@@ -15,7 +15,7 @@ export function AudioPlayer({ src, durationMs, downloadUrl }: AudioPlayerProps) 
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
-  const [downloading, setDownloading] = useState(false);
+  const [downloadingFormat, setDownloadingFormat] = useState<"wav" | "mp3" | null>(null);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -48,11 +48,12 @@ export function AudioPlayer({ src, durationMs, downloadUrl }: AudioPlayerProps) 
 
   const progress = totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
 
-  const handleDownload = useCallback(async () => {
-    if (!downloadUrl || downloading) return;
-    setDownloading(true);
+  const handleDownload = useCallback(async (format: "wav" | "mp3") => {
+    if (!downloadUrl || downloadingFormat) return;
+    setDownloadingFormat(format);
     try {
-      const resp = await fetch(downloadUrl);
+      const joiner = downloadUrl.includes("?") ? "&" : "?";
+      const resp = await fetch(`${downloadUrl}${joiner}format=${format}`);
       if (!resp.ok) throw new Error("下载失败");
       const blob = await resp.blob();
       const url = URL.createObjectURL(blob);
@@ -60,7 +61,7 @@ export function AudioPlayer({ src, durationMs, downloadUrl }: AudioPlayerProps) 
       a.href = url;
       const disposition = resp.headers.get("content-disposition");
       const match = disposition?.match(/filename=(.+)/);
-      a.download = match ? match[1] : "audio.mp3";
+      a.download = match ? match[1] : `audio.${format}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -68,9 +69,9 @@ export function AudioPlayer({ src, durationMs, downloadUrl }: AudioPlayerProps) 
     } catch {
       // ignore
     } finally {
-      setDownloading(false);
+      setDownloadingFormat(null);
     }
-  }, [downloadUrl, downloading]);
+  }, [downloadUrl, downloadingFormat]);
 
   return (
     <div className="space-y-3">
@@ -96,13 +97,24 @@ export function AudioPlayer({ src, durationMs, downloadUrl }: AudioPlayerProps) 
           </div>
         </div>
         {downloadUrl && (
-          <button
-            onClick={() => void handleDownload()}
-            disabled={downloading}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => void handleDownload("wav")}
+              disabled={Boolean(downloadingFormat)}
+              className="flex h-8 items-center justify-center gap-1 rounded-lg border border-gray-300 px-2 text-xs text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {downloadingFormat === "wav" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              WAV
+            </button>
+            <button
+              onClick={() => void handleDownload("mp3")}
+              disabled={Boolean(downloadingFormat)}
+              className="flex h-8 items-center justify-center gap-1 rounded-lg border border-gray-300 px-2 text-xs text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {downloadingFormat === "mp3" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              MP3
+            </button>
+          </div>
         )}
       </div>
     </div>

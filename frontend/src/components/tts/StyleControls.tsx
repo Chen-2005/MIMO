@@ -47,8 +47,8 @@ interface StyleControlsProps {
   onStylePromptChange: (value: string) => void;
   speed: number;
   onSpeedChange: (value: number) => void;
-  outputFormat: string;
-  onOutputFormatChange: (value: string) => void;
+  outputFormat: "wav";
+  onOutputFormatChange: (value: "wav") => void;
 }
 
 export function StyleControls({
@@ -236,13 +236,12 @@ export function StyleControls({
           </div>
         </div>
         <div className="sm:w-32">
-          <label className="mb-1 block text-xs font-medium text-gray-500">输出格式</label>
+          <label className="mb-1 block text-xs font-medium text-gray-500">生成格式</label>
           <select
             value={outputFormat}
-            onChange={(event) => onOutputFormatChange(event.target.value)}
+            onChange={() => onOutputFormatChange("wav")}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            <option value="mp3">MP3</option>
             <option value="wav">WAV</option>
           </select>
         </div>

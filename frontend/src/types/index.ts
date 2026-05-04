@@ -8,7 +8,7 @@ export interface CreateTTSRequest {
   pitch?: number;
   volume?: number;
   emotion?: string;
-  output_format?: string;
+  output_format?: "wav";
   enable_fallback?: boolean;
 }
 
@@ -29,7 +29,7 @@ export interface TaskDetail {
   text_char_count: number;
   style_prompt?: string;
   speed?: number;
-  output_format: string;
+  output_format: "wav";
   audio_url?: string;
   audio_duration_ms?: number;
   provider_error_code?: string;

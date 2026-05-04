@@ -79,7 +79,7 @@ class TTSService:
             pitch=req.pitch,
             volume=req.volume,
             emotion=req.emotion,
-            output_format=req.output_format,
+            output_format="wav",
         )
         self.db.add(task)
         await self.db.flush()
