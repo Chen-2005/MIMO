@@ -5,10 +5,10 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debia
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir uv
+RUN pip install --no-cache-dir uv -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 COPY pyproject.toml ./
-RUN uv pip install --system --no-cache .
+RUN uv pip install --system --no-cache . -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 COPY . .
 
