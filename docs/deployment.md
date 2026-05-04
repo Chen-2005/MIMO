@@ -329,6 +329,61 @@ alembic revision --autogenerate -m "描述信息"
 
 ---
 
+### 云服务器部署（Git Bash + SSH 密钥）
+
+如果本地使用 Git Bash 和 SSH 密钥连接云服务器，按以下步骤操作：
+
+#### 本地操作（Git Bash）
+
+```bash
+# 1. 确保代码已提交
+git status  # 应该是 clean 的
+
+# 2. 打包
+git archive --format=tar.gz --output=mimo-deploy.tar.gz HEAD
+
+# 3. 上传到服务器
+scp -i ~/Desktop/KeyPair-xxx.pem mimo-deploy.tar.gz root@your-server-ip:~/mimo-deploy.tar.gz
+scp -i ~/Desktop/KeyPair-xxx.pem scripts/deploy.sh root@your-server-ip:~/mimo-deploy-remote.sh
+```
+
+#### 服务器操作（SSH 登录后）
+
+```bash
+# 同步代码并重建（跳过数据库迁移）
+bash ~/mimo-deploy-remote.sh --archive ~/mimo-deploy.tar.gz --project-dir ~/cwj --skip-migrations
+```
+
+如果只是修改了代码（没有改依赖或 Dockerfile），可以跳过重建：
+
+```bash
+# 同步代码
+mkdir -p /tmp/mimo-staging
+tar -xzf ~/mimo-deploy.tar.gz -C /tmp/mimo-staging
+rsync -av --delete \
+  --exclude '.env' \
+  --exclude 'backend/.env' \
+  --exclude 'frontend/.env.local' \
+  --exclude 'backend/storage' \
+  --exclude 'frontend/key.pem' \
+  --exclude 'frontend/cert.pem' \
+  --exclude 'docker/docker-compose.yml' \
+  /tmp/mimo-staging/ ~/cwj/
+rm -rf /tmp/mimo-staging
+
+# 只重启容器（不重建镜像，秒完成）
+docker compose -f ~/cwj/docker/docker-compose.yml restart
+```
+
+#### 构建加速
+
+Dockerfile 已配置国内镜像源，首次构建后会缓存：
+- apt: 阿里云镜像
+- pip: 清华镜像
+- npm: npmmirror 镜像
+
+---
+
 ## 健康检查
 
 后端提供健康检查端点：
