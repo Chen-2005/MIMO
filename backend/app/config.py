@@ -9,10 +9,10 @@ class Settings(BaseSettings):
     # App
     APP_NAME: str = "MiMo TTS Platform"
     DEBUG: bool = False
-    SECRET_KEY: str = "change-me-in-production"
+    SECRET_KEY: str = "replace-with-a-random-secret-key"
 
     # Database
-    DATABASE_URL: str = "mysql+aiomysql://root:root@localhost:3306/mimo_tts"
+    DATABASE_URL: str = "mysql+aiomysql://appuser:app-password@localhost:3306/mimo_tts"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"

@@ -24,6 +24,7 @@ node_modules/
 .next/
 out/
 .vercel
+*.tsbuildinfo
 
 # OS
 .DS_Store
@@ -50,6 +51,12 @@ sql_test.txt
 test_output.txt
 verbose_import.txt
 test_sql.py
+mimo-deploy.tar.gz
+mimo_dump.sql
+
+# Local backend/frontend env files
+backend/.env
+frontend/.env.local
 
 # Alembic
 *.pyc
@@ -58,3 +65,20 @@ test_sql.py
 *.pem
 *.key
 *.crt
+
+# ============ Internal docs (不上传到仓库) ============
+docs/claude-handoff.md
+docs/deployment-handoff.md
+docs/mimo-skill-optimization.md
+docs/cloud-deployment.md
+docs/cloud-deployment-github.md
+docs/cloud-deployment-huawei.md
+docs/gitee-setup.md
+docs/github-upload.md
+docs/commercialization-roadmap.md
+docs/upload-deployment-workflow.md
+docs/workflow.md
+
+# ============ Personal local deployment helpers ============
+scripts/deploy.ps1
+scripts/deploy.sh

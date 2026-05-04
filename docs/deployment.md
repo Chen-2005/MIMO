@@ -101,7 +101,7 @@ pip install -e ".[dev]"
 
 # 配置环境变量
 cat > .env << EOF
-DATABASE_URL=mysql+aiomysql://root:root@localhost:3306/mimo_tts
+DATABASE_URL=mysql+aiomysql://appuser:app-password@localhost:3306/mimo_tts
 REDIS_URL=redis://localhost:6379/0
 PROVIDER_MODE=mimo
 MIMO_API_BASE=https://api.xiaomimimo.com

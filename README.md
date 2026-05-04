@@ -34,12 +34,6 @@
 - **重试与取消**：失败任务可重试，排队中任务可取消
 - **音频下载**：生成完成后可直接下载音频文件
 
-### 任务管理
-
-- **任务历史**：查看所有任务状态，支持按状态和模型筛选
-- **重试与取消**：失败任务可重试，排队中任务可取消
-- **音频下载**：生成完成后可直接下载音频文件
-
 ## 技术栈
 
 | 层 | 技术 |
@@ -83,18 +77,19 @@ mimo/
 └── .env.example                # 环境变量模板
 ```
 
-## 快速开始
+## 快速体验
+
+最快的上手方式，无需 MySQL/Redis，使用 SQLite + mock 模式。
 
 ### 前置条件
 
 - Python >= 3.11
 - Node.js >= 18
-- MiMo API Key（从 [小米 MiMo 平台](https://api.xiaomimimo.com) 获取）
 
 ### 1. 克隆项目
 
 ```bash
-git clone <repo-url> mimo
+git clone git@github.com:Chen-2005/MIMO.git mimo
 cd mimo
 ```
 
@@ -105,26 +100,29 @@ cd backend
 
 # 安装依赖
 pip install -e ".[dev]"
+pip install aiosqlite
 
 # 配置环境变量
-cp ../.env.example .env
-# 编辑 .env，填入 MIMO_API_KEY
+cat > .env << EOF
+DATABASE_URL=sqlite+aiosqlite:///test.db
+PROVIDER_MODE=mock
+CELERY_ENABLED=false
+LOCAL_STORAGE_PATH=./storage
+DEBUG=true
+EOF
 
 # 数据库迁移
 alembic upgrade head
 
 # 启动
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-`.env` 最小配置：
+`PROVIDER_MODE=mock` 不调用真实 API，生成测试音调音频。如需真实 TTS：
 
 ```env
-DATABASE_URL=sqlite+aiosqlite:///test.db
 PROVIDER_MODE=mimo
-CELERY_ENABLED=false
-LOCAL_STORAGE_PATH=./storage
-MIMO_API_BASE=https://api.xiaomimimo.com/v1
+MIMO_API_BASE=https://api.xiaomimimo.com
 MIMO_API_KEY=your_api_key_here
 ```
 
@@ -145,6 +143,113 @@ npm run dev
 - 前端：http://localhost:3000
 - 后端 API 文档：http://localhost:8000/docs
 - 健康检查：http://localhost:8000/health
+
+---
+
+## 生产部署（Docker）
+
+使用 Docker Compose 一键部署，适用于服务器或云环境。
+
+### 1. 配置环境变量
+
+```bash
+cp .env.example .env
+```
+
+编辑 `.env`，修改以下关键项：
+
+```bash
+# 生产环境务必关闭 DEBUG
+DEBUG=false
+
+# 生成随机密钥
+SECRET_KEY=<随机字符串>
+
+# TTS API
+MIMO_API_BASE=https://api.xiaomimimo.com
+MIMO_API_KEY=your_api_key_here
+
+# 生产模式
+PROVIDER_MODE=mimo
+CELERY_ENABLED=true
+```
+
+### 2. 启动服务
+
+```bash
+cd docker
+docker compose up -d
+```
+
+启动后包含以下服务：
+
+| 服务 | 端口 | 说明 |
+|------|------|------|
+| mysql | 3306 | MySQL 8.0 |
+| redis | 6379 | Redis 7 |
+| backend | 8000 | FastAPI 后端 |
+| celery-worker | — | 异步任务处理 |
+| frontend | 3000 | Next.js 前端 |
+
+### 3. 初始化数据库
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+### 4. 访问
+
+- 前端：http://localhost:3000
+- 后端 API 文档：http://localhost:8000/docs
+- 健康检查：http://localhost:8000/health
+
+### 5. 常用运维命令
+
+```bash
+# 查看日志
+docker compose logs -f backend
+docker compose logs -f celery-worker
+
+# 重启服务
+docker compose restart backend
+
+# 停止所有服务
+docker compose down
+
+# 清除数据重新开始
+docker compose down -v
+```
+
+### 云服务器额外步骤
+
+部署到云服务器（如华为云、阿里云）时，还需要：
+
+1. **开放安全组端口**：80、443、3000、8000
+2. **配置反向代理**（可选）：用 Nginx 将 80/443 转发到 3000 和 8000
+3. **配置域名和 HTTPS 证书**（可选）
+
+详细的部署和运维说明见 [docs/deployment.md](docs/deployment.md)。
+
+---
+
+## HTTPS 局域网部署
+
+如果需要在局域网内通过手机或平板访问（录音功能需要 HTTPS）：
+
+```bash
+cd frontend
+
+# 生成自签名证书
+openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=<你的局域网IP>"
+
+# 构建并启动
+npm run build
+node server.mjs
+```
+
+通过 `https://<你的局域网IP>:3000` 访问，首次需接受自签名证书警告。
+
+详见 [docs/deployment.md](docs/deployment.md) 方式四。
 
 ## 页面说明
 
@@ -286,27 +391,6 @@ npm run dev
 - **mock**：不调用真实 API，生成测试音调音频，适合开发调试
 - **mimo**：调用真实 MiMo API，需要配置 `MIMO_API_BASE` 和 `MIMO_API_KEY`
 
-## HTTPS 部署
-
-音频录制依赖浏览器麦克风权限，需要 HTTPS 环境。项目提供内置的 HTTPS 服务器：
-
-```bash
-cd frontend
-
-# 生成自签名证书
-openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=<你的IP>"
-
-# 构建并启动
-npm run build
-node server.mjs
-```
-
-`server.mjs` 会：
-- 以 HTTPS 启动前端（默认端口 3000）
-- 代理 `/api/*` 和 `/static/*` 到后端（默认 `http://127.0.0.1:8000`）
-
-局域网内其他设备通过 `https://<你的IP>:3000` 访问，首次需接受自签名证书警告。
-
 ## 测试
 
 ### 单元测试
@@ -334,32 +418,14 @@ python -m pytest tests/test_mimo_integration.py -vv -s
 
 需要在 `.env` 中配置 `PROVIDER_MODE=mimo` 和有效的 `MIMO_API_KEY`。
 
-## Docker 部署
-
-```bash
-cp .env.example .env
-# 编辑 .env 填入 MIMO_API_KEY
-
-cd docker
-docker compose up -d
-
-# 初始化数据库
-docker compose exec backend alembic upgrade head
-```
-
-详见 [docs/deployment.md](docs/deployment.md)。
-
 ## 文档索引
 
 | 文档 | 内容 |
 |------|------|
 | [docs/api.md](docs/api.md) | REST API 接口文档 |
 | [docs/development.md](docs/development.md) | 开发说明与架构 |
-| [docs/deployment.md](docs/deployment.md) | 部署指南（Docker / 本地 / 局域网） |
+| [docs/deployment.md](docs/deployment.md) | 部署指南（Docker / 本地 / 局域网 / 云服务器） |
 | [docs/voice-clone-workflow.md](docs/voice-clone-workflow.md) | 音色克隆工作流详解 |
-| [docs/mimo-skill-optimization.md](docs/mimo-skill-optimization.md) | 基于官方 Skill 的优化清单 |
-| [docs/commercialization-roadmap.md](docs/commercialization-roadmap.md) | 商业化路线图与实施方案 |
-| [docs/claude-handoff.md](docs/claude-handoff.md) | Claude Code 交接文档 |
 
 ## License
 

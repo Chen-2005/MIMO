@@ -3,8 +3,10 @@ services:
     image: mysql:8.0
     container_name: mimo-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: mimo_tts
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-dev-root-password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mimo_tts}
+      MYSQL_USER: ${MYSQL_USER:-mimo}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-dev-mimo-password}
     ports:
       - "3306:3306"
     volumes:
@@ -34,8 +36,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: mysql+aiomysql://root:root@mysql:3306/mimo_tts
-      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: ${DATABASE_URL:-mysql+aiomysql://mimo:dev-mimo-password@mysql:3306/mimo_tts}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       DEBUG: "true"
     depends_on:
       mysql:
@@ -50,8 +52,8 @@ services:
     container_name: mimo-celery-worker
     command: celery -A app.tasks.celery_app worker --loglevel=info
     environment:
-      DATABASE_URL: mysql+aiomysql://root:root@mysql:3306/mimo_tts
-      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: ${DATABASE_URL:-mysql+aiomysql://mimo:dev-mimo-password@mysql:3306/mimo_tts}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
     depends_on:
       mysql:
         condition: service_healthy
