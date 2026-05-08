@@ -217,14 +217,35 @@ export function VoiceDetailPanel({
         <h3 className="text-sm font-semibold">音色详情</h3>
         <div className="flex flex-wrap gap-2">
           {detail.status === "active" && (
-            <button
-              onClick={() => void handlePreview()}
-              disabled={previewLoading}
-              className="flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-xs text-white hover:bg-blue-700 disabled:opacity-50"
-            >
-              <Volume2 className="h-3.5 w-3.5" />
-              {previewLoading ? "生成中..." : "试听"}
-            </button>
+            <>
+              <button
+                onClick={() => void handlePreview()}
+                disabled={previewLoading}
+                className="flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-xs text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Volume2 className="h-3.5 w-3.5" />
+                {previewLoading ? "生成中..." : "试听"}
+              </button>
+              {detail.is_public === 0 ? (
+                <button
+                  onClick={() => void handleTogglePublish(true)}
+                  disabled={publishing}
+                  className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-xs text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {publishing ? "发布中..." : "发布"}
+                </button>
+              ) : (
+                <button
+                  onClick={() => void handleTogglePublish(false)}
+                  disabled={publishing}
+                  className="flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-600 hover:bg-white disabled:opacity-50"
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                  {publishing ? "处理中..." : "取消发布"}
+                </button>
+              )}
+            </>
           )}
           {!editing && detail.status === "active" && (
             <button
@@ -405,29 +426,6 @@ export function VoiceDetailPanel({
             <div className="mt-3 border-t pt-3">
               <p className="mb-2 text-xs text-gray-500">试听音频</p>
               <AudioPlayer src={previewAudioUrl} />
-              {detail.status === "active" && (
-                <div className="mt-3 flex gap-2">
-                  {detail.is_public === 0 ? (
-                    <button
-                      onClick={() => void handleTogglePublish(true)}
-                      disabled={publishing}
-                      className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs text-white hover:bg-emerald-700 disabled:opacity-50"
-                    >
-                      <Globe className="h-3.5 w-3.5" />
-                      {publishing ? "发布中..." : "发布音色"}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => void handleTogglePublish(false)}
-                      disabled={publishing}
-                      className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-xs text-slate-600 hover:bg-white disabled:opacity-50"
-                    >
-                      <Lock className="h-3.5 w-3.5" />
-                      {publishing ? "处理中..." : "取消发布"}
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
           )}
         </div>
