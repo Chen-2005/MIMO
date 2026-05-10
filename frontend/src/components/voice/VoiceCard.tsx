@@ -49,9 +49,13 @@ export function VoiceCard({ profile, expanded, onToggle, onEdit, onDelete }: Voi
               <span className="inline-flex items-center gap-0.5 text-xs text-amber-600">
                 <Lock className="h-3 w-3" /> 本地
               </span>
-            ) : (
+            ) : profile.is_public === 1 ? (
               <span className="inline-flex items-center gap-0.5 text-xs text-emerald-600">
                 <Globe className="h-3 w-3" /> 已发布
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-0.5 text-xs text-gray-500">
+                <Lock className="h-3 w-3" /> 仅自己
               </span>
             )}
           </div>

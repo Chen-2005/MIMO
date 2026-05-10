@@ -83,6 +83,7 @@ export function VoiceCloneTab({ embedded = false, initialAudioUrl }: VoiceCloneT
       model_code: lc.model_code,
       provider_voice_id: lc.provider_voice_id,
       status: "active",
+      is_public: 0,
       isLocal: true,
     }));
     const backendItems = backend.filter(

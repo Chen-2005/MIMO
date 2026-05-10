@@ -349,6 +349,7 @@ class VoiceService:
                 "age_hint": p.age_hint,
                 "language_hint": p.language_hint,
                 "status": p.status,
+                "is_public": p.is_public,
             }
             for p in profiles
         ]

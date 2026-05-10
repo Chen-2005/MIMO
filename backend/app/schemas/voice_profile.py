@@ -14,6 +14,7 @@ class VoiceProfileItem(BaseModel):
     age_hint: str | None = None
     language_hint: str | None = None
     status: str
+    is_public: int = 0
     audio_url: str | None = None
 
 

@@ -71,6 +71,7 @@ export interface VoiceProfileItem {
   age_hint?: string;
   language_hint?: string;
   status: string;
+  is_public: number;
   audio_url?: string;
   isLocal?: boolean;
 }

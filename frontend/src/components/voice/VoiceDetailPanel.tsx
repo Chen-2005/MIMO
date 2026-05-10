@@ -47,6 +47,7 @@ export function VoiceDetailPanel({
   const [saving, setSaving] = useState(false);
   const [previewAudioUrl, setPreviewAudioUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [hasPreviewed, setHasPreviewed] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
@@ -164,6 +165,7 @@ export function VoiceDetailPanel({
         const currentTask = await getTask(task.task_id);
         if (currentTask.status === "succeeded" && currentTask.audio_url) {
           setPreviewAudioUrl(getTaskAudioUrl(task.task_id));
+          setHasPreviewed(true);
           break;
         }
         if (currentTask.status === "failed" || currentTask.status === "canceled") {
@@ -226,16 +228,7 @@ export function VoiceDetailPanel({
                 <Volume2 className="h-3.5 w-3.5" />
                 {previewLoading ? "生成中..." : "试听"}
               </button>
-              {detail.is_public === 0 ? (
-                <button
-                  onClick={() => void handleTogglePublish(true)}
-                  disabled={publishing}
-                  className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-xs text-white hover:bg-emerald-700 disabled:opacity-50"
-                >
-                  <Globe className="h-3.5 w-3.5" />
-                  {publishing ? "发布中..." : "发布"}
-                </button>
-              ) : (
+              {detail.is_public === 1 ? (
                 <button
                   onClick={() => void handleTogglePublish(false)}
                   disabled={publishing}
@@ -244,7 +237,16 @@ export function VoiceDetailPanel({
                   <Lock className="h-3.5 w-3.5" />
                   {publishing ? "处理中..." : "取消发布"}
                 </button>
-              )}
+              ) : hasPreviewed ? (
+                <button
+                  onClick={() => void handleTogglePublish(true)}
+                  disabled={publishing}
+                  className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-xs text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {publishing ? "发布中..." : "发布"}
+                </button>
+              ) : null}
             </>
           )}
           {!editing && detail.status === "active" && (
@@ -263,6 +265,12 @@ export function VoiceDetailPanel({
           </button>
         </div>
       </div>
+
+      {detail.status === "active" && detail.is_public === 0 && !hasPreviewed && (
+        <p className="mb-3 text-xs text-amber-600">
+          请先点击「试听」确认音色效果，满意后再发布。
+        </p>
+      )}
 
       {editing ? (
         <div className="space-y-3">
